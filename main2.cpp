@@ -49,14 +49,74 @@ void printAllProducts(const vector<Product>& products) {
     cout << endl;
 }
 
+class Payment {
+private:
+    string paymentMethod;
+
+public:
+    
+    Payment(const string& method) : paymentMethod(method) {}
+
+    // Function to display payment method
+    void printPaymentMethod() const {
+        cout << "Payment Method: " << paymentMethod << endl;
+    }
+
+    // Getter for the payment method
+    string getPaymentMethod() const {
+        return paymentMethod;
+    }
+
+    // Static method to validate and return a valid payment method
+    static Payment selectPaymentMethod() {
+        int choice;
+        string method;
+
+        cout << "\nChoose a payment method:\n";
+        cout << "1. Cash on Delivery (COD)\n";
+        cout << "2. GCash\n";
+        cout << "3. Maya\n";
+        cout << "4. Visa\n";
+        cout << "5. MasterCard\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                method = "Cash on Delivery (COD)";
+                break;
+            case 2:
+                method = "GCash";
+                break;
+            case 3:
+                method = "Maya";
+                break;
+            case 4:
+                method = "Visa";
+                break;
+            case 5:
+                method = "MasterCard";
+                break;
+            default:
+                cout << "Invalid choice. Defaulting to Cash on Delivery (COD).\n";
+                method = "Cash on Delivery (COD)";
+                break;
+        }
+
+        return Payment(method);
+    }
+};
+
 class Order {
 private:
     vector<pair<Product, int>> orderItems; // Store product and quantity
     double totalAmount;
+    Payment payment;  // Store the payment method for this order
 
 public:
     // Constructor
-    Order(const vector<pair<Product, int>>& items) : orderItems(items), totalAmount(0) {
+    Order(const vector<pair<Product, int>>& items, const Payment& paymentMethod)
+        : orderItems(items), totalAmount(0), payment(paymentMethod) {
         for (const auto& item : orderItems) {
             totalAmount += item.first.getPrice() * item.second;
         }
@@ -78,15 +138,20 @@ public:
         }
 
         cout << "\nTotal Amount: " << totalAmount << "\n";
+        payment.printPaymentMethod();  
     }
 };
 
 class Cart {
 private:
-    vector<pair<Product, int>> cartItems; // Store product and quantity
+    vector<pair<Product, int>> cartItems;  // Store product and quantity
     vector<Order> pastOrders; // Store past orders
+    Payment payment; // Payment method for the current checkout
 
 public:
+    // Constructor
+    Cart() : payment(Payment("None")) {} 
+
     // Add product to the cart
     void addProductToCart(const Product& product) {
         for (auto& item : cartItems) {
@@ -117,6 +182,7 @@ public:
                      << setw(10) << item.second << endl;
             }
 
+            // Ask for checkout
             char checkoutChoice;
             do {
                 cout << "Do you want to check out all the products? (Y/N): ";
@@ -129,11 +195,15 @@ public:
             } while (checkoutChoice != 'Y' && checkoutChoice != 'N');
 
             if (checkoutChoice == 'Y') {
-                // Move cart items to past orders
-                pastOrders.push_back(Order(cartItems));
-                cartItems.clear(); // Empty the cart after checkout
+                // Select payment method
+                payment = Payment::selectPaymentMethod();
+
+                // Move cart items to past orders and pass the selected payment method
+                pastOrders.push_back(Order(cartItems, payment));
+                cartItems.clear();  // Empty the cart after checkout
 
                 cout << "\nYou have successfully checked out. Thank you for your purchase!\n";
+                payment.printPaymentMethod();  // Display the selected payment method
             } else {
                 cout << "Returning to the menu.\n";
             }
@@ -147,7 +217,7 @@ public:
         } else {
             int orderNumber = 1;
             for (const auto& order : pastOrders) {
-                order.printOrder(orderNumber);
+                order.printOrder(orderNumber);  // Print the order along with payment method
                 orderNumber++;
             }
         }
@@ -205,46 +275,47 @@ int main() {
             case 1:
                 printAllProducts(products);
 
+                            do {
+                cout << "Add to cart? (y/n): ";
+                cin >> addToCartQuestion;
+                addToCartQuestion = toUpperCase(addToCartQuestion);
+
+                if (addToCartQuestion != "Y" && addToCartQuestion != "N") {
+                    cout << "Error, enter 'y' or 'n' only.\n";
+                }
+            } while (addToCartQuestion != "Y" && addToCartQuestion != "N");
+
+            while (addToCartQuestion == "Y") {
+                cout << "Enter the ID of the product you want to add to the shopping cart: ";
+                cin >> selectedID;
+                addToCart(selectedID, products, cart);
+
                 do {
-                    cout << "Add to cart? (y/n): ";
+                    cout << "\nAdd another product to the cart? (y/n): ";
                     cin >> addToCartQuestion;
                     addToCartQuestion = toUpperCase(addToCartQuestion);
 
-                    if (addToCartQuestion != "Y" && addToCartQuestion != "N") {
+                    if (addToCartQuestion == "Y") {
+                        printAllProducts(products);
+                    } else if (addToCartQuestion != "Y" && addToCartQuestion != "N") {
                         cout << "Error, enter 'y' or 'n' only.\n";
                     }
                 } while (addToCartQuestion != "Y" && addToCartQuestion != "N");
-
-                while (addToCartQuestion == "Y") {
-                    cout << "Enter the ID of the product you want to add to the shopping cart: ";
-                    cin >> selectedID;
-                    addToCart(selectedID, products, cart);
-
-                    do {
-                        cout << "\nAdd another product to the cart? (y/n): ";
-                        cin >> addToCartQuestion;
-                        addToCartQuestion = toUpperCase(addToCartQuestion);
-
-                        if (addToCartQuestion == "Y") {
-                            printAllProducts(products);
-                        } else if (addToCartQuestion != "Y" && addToCartQuestion != "N") {
-                            cout << "Error, enter 'y' or 'n' only.\n";
-                        }
-                    } while (addToCartQuestion != "Y" && addToCartQuestion != "N");
-                }
-                break;
-            case 2:
-                cart.viewCart();
-                break;
-            case 3:
-                cart.viewOrders();
-                break;
-            case 4:
-                return 0;
-            default:
-                cout << "Invalid choice. Please try again.\n";
-        }
+            }
+            break;
+        case 2:
+            cart.viewCart();
+            break;
+        case 3:
+            cart.viewOrders();
+            break;
+        case 4:
+            return 0;
+        default:
+            cout << "Invalid choice. Please try again.\n";
     }
-
-    return 0;
 }
+return 0;
+}
+
+
