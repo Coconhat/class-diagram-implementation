@@ -308,6 +308,7 @@ int main()
         cout << "2. View Cart\n";
         cout << "3. View Orders\n";
         cout << "4. Exit\n";
+        cout << "5. ...";
         cout << "Enter your choice: ";
         cin >> choice;
         system("cls");
