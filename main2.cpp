@@ -65,7 +65,7 @@ public:
     // Getter for the payment method
     string getPaymentMethod() const {
         return paymentMethod;
-    }
+     }
 
     // Static method to validate and return a valid payment method
     static Payment selectPaymentMethod() {
@@ -128,7 +128,7 @@ public:
         cout << left << setw(15) << "Product ID" 
              << left << setw(50) << "Name" 
              << right << setw(10) << "Price" << setw(10) << "Quantity" << endl;
-        cout << string(85, '-') << endl;
+        cout << string(85, '-') << endl; 
 
         for (const auto& item : orderItems) {
             cout << left << setw(15) << item.first.getProductID()
@@ -260,8 +260,9 @@ int main() {
     int choice;
     string addToCartQuestion;
     string selectedID;
+    bool condition = true;
 
-    while (true) {
+    while (condition) {
         cout << "\nChoose an option: \n";
         cout << "1. View Products\n";
         cout << "2. View Cart\n";
@@ -275,7 +276,7 @@ int main() {
             case 1:
                 printAllProducts(products);
 
-                            do {
+                 do {
                 cout << "Add to cart? (y/n): ";
                 cin >> addToCartQuestion;
                 addToCartQuestion = toUpperCase(addToCartQuestion);
@@ -310,9 +311,15 @@ int main() {
             cart.viewOrders();
             break;
         case 4:
-            return 0;
+        cout << "Thank you for shopping!";
+        condition = (!condition);
+            break;
+
+            
         default:
+            cin.clear();
             cout << "Invalid choice. Please try again.\n";
+            cin.ignore();
     }
 }
 return 0;
